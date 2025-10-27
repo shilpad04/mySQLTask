@@ -1,18 +1,18 @@
--- Ecommerce DB creation
+-- Create the ecommerce database
 CREATE DATABASE ecommerce;
 
--- Using DB ecommerce 
+-- Use the ecommerce database
 USE ecommerce;
 
--- Customer Table
+-- Create customers table to store customer details
 CREATE TABLE customers(
  id INT AUTO_INCREMENT PRIMARY KEY,
  name VARCHAR(100) NOT NULL,
  email VARCHAR(50) UNIQUE,
  address VARCHAR(200)
 );
-  
--- Orders Table
+
+-- Create orders table to store order information
 CREATE TABLE orders(
  id INT AUTO_INCREMENT PRIMARY KEY,
  customer_id INT,
@@ -22,8 +22,8 @@ CREATE TABLE orders(
  ON DELETE CASCADE
  ON UPDATE CASCADE
 );
-   
--- Products Table
+
+-- Create products table to store product details
 CREATE TABLE products(
  id INT AUTO_INCREMENT PRIMARY KEY,
  name VARCHAR(200) NOT NULL, 
@@ -31,9 +31,7 @@ CREATE TABLE products(
  description TEXT
 );
 
--- Sample values insertion
-
--- Customers Table Data
+-- Insert sample data into customers table
 INSERT INTO customers (name, email, address) VALUES
 ('John Doe', 'john.doe@example.com', '123 Main St, New York'),
 ('Jane Smith', 'jane.smith@example.com', '456 Park Ave, Los Angeles'),
@@ -86,8 +84,7 @@ INSERT INTO customers (name, email, address) VALUES
 ('Swati Joshi', 'swati.joshi@example.com', 'Nashik, Maharashtra'),
 ('Rajat Sharma', 'rajat.sharma@example.com', 'Delhi');
 
-
--- Products Table Data
+-- Insert sample data into products table
 INSERT INTO products (name, price, description)
 VALUES
 ('Product A', 10.00, 'Description for Product A'),
@@ -141,7 +138,7 @@ VALUES
 ('Product AW', 112.00, 'Description for Product AW'),
 ('Product AX', 114.00, 'Description for Product AX');
 
--- Orders Table Data
+-- Insert sample data into orders table
 INSERT INTO orders (customer_id, order_date, total_amount) VALUES
 (1, '2025-10-01', 899.98),
 (2, '2025-10-02', 499.50),
@@ -194,42 +191,35 @@ INSERT INTO orders (customer_id, order_date, total_amount) VALUES
 (49, '2025-08-30', 1250.00),
 (50, '2025-08-31', 470.50);
 
-
--- Queries 
-
--- 1. Retrieve all customers who have placed an order in the last 30 days.
-SELECT C.*, COUNT(O.id) As Total_orders
+-- Retrieve customers who placed an order in the last 30 days
+SELECT C.*, COUNT(O.id) AS Total_orders
 FROM customers C
-JOIN orders O on C.id = O.customer_id 
+JOIN orders O ON C.id = O.customer_id 
 WHERE O.order_date >= (CURDATE() - INTERVAL 30 DAY)
 GROUP BY C.id;
 
--- 2. Get the total amount of all orders placed by each customer.
-
+-- Retrieve total order amount per customer
 SELECT c.name AS Name, o.customer_id AS `Customer ID`, SUM(o.total_amount) AS `Total Amount`
 FROM orders o
 JOIN customers c ON c.id = o.customer_id
 GROUP BY o.customer_id, c.name;
 
--- 3. Update the price of Product C to 45.00.
+-- Update price of Product C to 45.00
 UPDATE products
 SET price = 45.00
 WHERE name = 'Product C';
 
--- 4. Add a new column discount to the products table.
+-- Add a new column discount to products table
 ALTER TABLE products
 ADD COLUMN discount DECIMAL(5,2);
 
--- 5. Retrieve the top 3 products with the highest price.
+-- Retrieve top 3 highest priced products
 SELECT * 
 FROM products
 ORDER BY price DESC 
 LIMIT 3;
 
--- 6. Get the names of customers who have ordered Product A.
--- 9.Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.
--- Created linkig table as there is no linking data between product and order.
--- Order_Items table.
+-- Create order_items table for normalization (many-to-many relationship)
 CREATE TABLE order_items(
   id INT AUTO_INCREMENT PRIMARY KEY,
   order_id INT,
@@ -239,7 +229,7 @@ CREATE TABLE order_items(
   FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Order_items Table Data
+-- Insert sample data into order_items table
 INSERT INTO order_items (order_id, product_id, quantity)
 VALUES
 (1, 1, 2),
@@ -268,25 +258,24 @@ VALUES
 (24, 25, 3),
 (25, 17, 1);
 
--- Select query to display the data.
-SELECT DISTINCT c.name AS CustomerName,
-p.name AS ProductsName
+-- Retrieve names of customers who ordered Product A
+SELECT DISTINCT c.name AS CustomerName, p.name AS ProductName
 FROM customers c
 JOIN orders o ON c.id = o.customer_id
 JOIN order_items oi ON o.id = oi.order_id
 JOIN products p ON oi.product_id = p.id
 WHERE p.name = 'Product A';
 
--- 7. Join the orders and customers tables to retrieve the customer's name and order date for each order
+-- Retrieve customer name and order date for each order
 SELECT c.name AS CustomerName, o.order_date AS OrderDate
 FROM orders o
 JOIN customers c ON o.customer_id = c.id;
 
--- 8. Retrieve the orders with a total amount greater than 150.00.
+-- Retrieve orders with total amount greater than 150.00
 SELECT * 
 FROM orders 
 WHERE total_amount > 150.00;
 
--- 10. Retrieve the average total of all orders.
+-- Retrieve average total amount of all orders
 SELECT AVG(total_amount) AS AverageOrderTotal
 FROM orders;
